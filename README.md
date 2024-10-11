@@ -4,6 +4,14 @@
 1. Download from link: [MovieLens-1M](https://grouplens.org/datasets/movielens/1m/)
 2. Clone Github: [Goodbooks-10k](https://github.com/zygmuntz/goodbooks-10k)
 
+Your file structure should look like this:
+```bash
+Project Root
+├── goodbooks-10k/      # Goodbooks-10k dataset folder
+├── ml-1m/              # MovieLens-1M dataset folder
+└── notebook.ipynb      # Project Notebook
+```
+
 ## Contributors
 1. Bryan Atista Kiely
 2. Clayton Fernalo
