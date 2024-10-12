@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 from collections import defaultdict
 
-def build_user_movie_interactions(ratings_df, user_column_name, item_column_name, rating_column_name):
+def build_user_item_interactions(ratings_df, user_column_name="userid", item_column_name="itemid", rating_column_name="rating"):
 
     user_movie_dict = defaultdict(list)
     for user_id, movie_id, rating in zip(ratings_df[user_column_name], ratings_df[item_column_name], ratings_df[rating_column_name]):

@@ -6,7 +6,6 @@ from sklearn.model_selection import train_test_split as sk_split
 
 DEFAULT_USER_COL = "userid"
 DEFAULT_ITEM_COL = "movieid"
-DEFAULT_RATING_COL = "rating"
 DEFAULT_TIMESTAMP_COL = "timestamp"
 
 from split_utils import (
@@ -46,14 +45,14 @@ def python_random_split(data, ratio=0.75, seed=42):
 
 def _do_stratification(
     data,
+    col_user,
+    col_item,
+    col_timestamp,
     ratio=0.75,
     min_rating=1,
     filter_by="user",
     is_random=True,
     seed=42,
-    col_user=DEFAULT_USER_COL,
-    col_item=DEFAULT_ITEM_COL,
-    col_timestamp=DEFAULT_TIMESTAMP_COL,
 ):
     # A few preliminary checks.
     if not (filter_by == "user" or filter_by == "item"):
@@ -116,58 +115,15 @@ def _do_stratification(
     return splits
 
 
-def python_chrono_split(
-    data,
-    ratio=0.75,
-    min_rating=1,
-    filter_by="user",
-    col_user=DEFAULT_USER_COL,
-    col_item=DEFAULT_ITEM_COL,
-    col_timestamp=DEFAULT_TIMESTAMP_COL,
-):
-    """Pandas chronological splitter.
-
-    This function splits data in a chronological manner. That is, for each user / item, the
-    split function takes proportions of ratings which is specified by the split ratio(s).
-    The split is stratified.
-
-    Args:
-        data (pandas.DataFrame): Pandas DataFrame to be split.
-        ratio (float or list): Ratio for splitting data. If it is a single float number
-            it splits data into two halves and the ratio argument indicates the ratio of
-            training data set; if it is a list of float numbers, the splitter splits
-            data into several portions corresponding to the split ratios. If a list is
-            provided and the ratios are not summed to 1, they will be normalized.
-        seed (int): Seed.
-        min_rating (int): minimum number of ratings for user or item.
-        filter_by (str): either "user" or "item", depending on which of the two is to
-            filter with min_rating.
-        col_user (str): column name of user IDs.
-        col_item (str): column name of item IDs.
-        col_timestamp (str): column name of timestamps.
-
-    Returns:
-        list: Splits of the input data as pandas.DataFrame.
-    """
-    return _do_stratification(
-        data,
-        ratio=ratio,
-        min_rating=min_rating,
-        filter_by=filter_by,
-        col_user=col_user,
-        col_item=col_item,
-        col_timestamp=col_timestamp,
-        is_random=False,
-    )
-
 
 def python_stratified_split(
     data,
+    col_user,
+    col_item,
+    col_timestamp,
     ratio=0.75,
     min_rating=1,
     filter_by="user",
-    col_user=DEFAULT_USER_COL,
-    col_item=DEFAULT_ITEM_COL,
     seed=42,
 ):
     """Pandas stratified splitter.
@@ -194,11 +150,12 @@ def python_stratified_split(
     """
     return _do_stratification(
         data,
+        col_user,
+        col_item,
+        col_timestamp,
         ratio=ratio,
         min_rating=min_rating,
         filter_by=filter_by,
-        col_user=col_user,
-        col_item=col_item,
         is_random=True,
         seed=seed,
     )
