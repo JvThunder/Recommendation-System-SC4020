@@ -12,6 +12,16 @@ Project Root
 └── notebook.ipynb      # Project Notebook
 ```
 
+## Environment Setup
+```bash
+conda create --name rec-sys --file requirements.txt
+conda activate rec-sys
+conda list --export > requirements.txt
+```
+
+
+
+
 ## Contributors
 1. Bryan Atista Kiely
 2. Clayton Fernalo
