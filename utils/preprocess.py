@@ -10,29 +10,36 @@ def get_goodbooks_10k():
     books = pd.read_csv('goodbooks-10k/books.csv')
     ratings = pd.read_csv('goodbooks-10k/ratings.csv')
 
-    # Filter all NaN values
+    # Filter all NaN values rows
     books = books.dropna()
     ratings = ratings.dropna()
 
-    # Filter out users with less than 10 ratings
+    # Filter out the books not in the books list from rating
+    ratings = ratings[ratings['book_id'].isin(books['book_id'])]
+
+    # Filter out users with less than 100 ratings
     user_counts = ratings['user_id'].value_counts()
-    user_ids = user_counts[user_counts >= 10].index
+    user_ids = (user_counts[user_counts >= 100].index)
     ratings = ratings[ratings['user_id'].isin(user_ids)]
 
-    # Filter out books with less than 10 ratings
+    # Filter out books with less than 100 ratings
     book_counts = ratings['book_id'].value_counts()
-    book_ids = book_counts[book_counts >= 10].index
+    book_ids = (book_counts[book_counts >= 10].index)
     books = books[books['book_id'].isin(book_ids)]
     ratings = ratings[ratings['book_id'].isin(book_ids)]
 
+    # reindex the user ids
+    user_id_map = {user_id: i for i, user_id in enumerate(ratings['user_id'].unique())}
+    ratings['user_id'] = ratings['user_id'].map(user_id_map)
+
     # reindex the book ids
-    book_id_map = {book_id: i for i, book_id in enumerate(book_ids)}
+    book_id_map = {book_id: i for i, book_id in enumerate(books['book_id'])}
     ratings['book_id'] = ratings['book_id'].map(book_id_map)
     books['book_id'] = books['book_id'].map(book_id_map)
 
-    # reindex the user ids
-    user_id_map = {user_id: i for i, user_id in enumerate(user_ids)}
-    ratings['user_id'] = ratings['user_id'].map(user_id_map)
+    assert(ratings['user_id'].nunique() == ratings['user_id'].max()+1)
+    assert(ratings['book_id'].nunique() == ratings['book_id'].max()+1)
+    assert(books['book_id'].nunique() == books['book_id'].max()+1)
 
     # take the columns we need
     books = books[['book_id']]
@@ -68,18 +75,23 @@ def get_movielens_1m():
     movies = movies.dropna()
 
     # user reindexing
-    user_to_index = {user: i+1 for i, user in enumerate(users['userid'])}
+    user_to_index = {user: i for i, user in enumerate(users['userid'])}
 
     # reindex userid in users and ratings
     users['userid'] = users['userid'].map(user_to_index)
     ratings['userid'] = ratings['userid'].map(user_to_index)
 
     # movie reindexing
-    movie_to_index = {movie: i+1 for i, movie in enumerate(movies['movieid'])}
+    movie_to_index = {movie: i for i, movie in enumerate(movies['movieid'])}
 
     # reindex movieid in movies and ratings
     movies['movieid'] = movies['movieid'].map(movie_to_index)
     ratings['movieid'] = ratings['movieid'].map(movie_to_index)
+
+    assert(ratings['userid'].nunique() == ratings['userid'].max())
+    assert(ratings['userid'].nunique() == ratings['userid'].max())
+    assert(ratings['movieid'].nunique() == ratings['movieid'].max())
+    assert(movies['movieid'].nunique() == movies['movieid'].max())
 
     occupation_dict = {
         0: "other",
