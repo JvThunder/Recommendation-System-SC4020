@@ -22,11 +22,10 @@ def get_goodbooks_10k():
     # user_ids = (user_counts[user_counts >= 100].index)
     # ratings = ratings[ratings['user_id'].isin(user_ids)]
 
-    # Flter by sampling only 1000 users 
     user_ids = ratings['user_id'].sample(n=1000, random_state=42).unique()
     ratings = ratings[ratings['user_id'].isin(user_ids)]
     
-    # Filter out books with less than 100 ratings
+    # Filter out books with less than 10 ratings
     book_counts = ratings['book_id'].value_counts()
     book_ids = (book_counts[book_counts >= 30].index)
     books = books[books['book_id'].isin(book_ids)]
@@ -45,8 +44,6 @@ def get_goodbooks_10k():
     assert(ratings['book_id'].nunique() == ratings['book_id'].max()+1)
     assert(books['book_id'].nunique() == books['book_id'].max()+1)
 
-    # take the columns we need
-    books = books[['book_id']]
     users = pd.DataFrame({'userid': range(len(user_ids))})
 
     # rename ratings user_id to userid
@@ -54,8 +51,12 @@ def get_goodbooks_10k():
     books = books.rename(columns={'book_id': 'itemid'})
     ratings['timestamp'] = 0
 
+    # Load the pre-trained SentenceTransformer model
+    model = SentenceTransformer('all-MiniLM-L6-v2')
+
     # randomize but repeat
-    books_features_tensor = torch.randn(len(books), TRANSFORMER_EMBEDDING_DIM)
+    books_features_tensor = model.encode(books['original_title'].tolist())
+    books_features_tensor = torch.tensor(books_features_tensor, dtype=torch.float)
     user_features_tensor = torch.randn(len(users), TRANSFORMER_EMBEDDING_DIM)
 
     col_user = 'userid'
@@ -73,6 +74,9 @@ def get_movielens_1m():
     users = pd.read_csv('ml-1m/users.dat', sep='::', header=None, names=user_columns, engine='python', encoding='ISO-8859-1')
     movies = pd.read_csv('ml-1m/movies.dat', sep='::', header=None, names=movie_columns, engine='python', encoding='ISO-8859-1')
     ratings = pd.read_csv('ml-1m/ratings.dat', sep='::', header=None, names=rating_columns, engine='python', encoding='ISO-8859-1')
+
+    # Filter the movies not in the ratings list
+    movies = movies[movies['movieid'].isin(ratings['movieid'])]
 
     # Filter all NaN values
     users = users.dropna()
@@ -92,9 +96,9 @@ def get_movielens_1m():
     movies['movieid'] = movies['movieid'].map(movie_to_index)
     ratings['movieid'] = ratings['movieid'].map(movie_to_index)
 
-    # assert(ratings['userid'].nunique() == ratings['userid'].max())
-    # assert(ratings['movieid'].nunique() == ratings['movieid'].max())
-    # assert(movies['movieid'].nunique() == movies['movieid'].max())
+    assert(ratings['userid'].nunique() == ratings['userid'].max()+1)
+    assert(ratings['movieid'].nunique() == ratings['movieid'].max()+1)
+    assert(movies['movieid'].nunique() == movies['movieid'].max()+1)
 
     occupation_dict = {
         0: "other",
