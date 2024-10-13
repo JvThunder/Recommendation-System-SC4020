@@ -23,12 +23,12 @@ def get_goodbooks_10k():
     # ratings = ratings[ratings['user_id'].isin(user_ids)]
 
     # Flter by sampling only 1500 users 
-    user_ids = ratings['user_id'].sample(n=1500, random_state=42).unique()
+    user_ids = ratings['user_id'].sample(n=3000, random_state=42).unique()
     ratings = ratings[ratings['user_id'].isin(user_ids)]
     
     # Filter out books with less than 100 ratings
     book_counts = ratings['book_id'].value_counts()
-    book_ids = (book_counts[book_counts >= 10].index)
+    book_ids = (book_counts[book_counts >= 30].index)
     books = books[books['book_id'].isin(book_ids)]
     ratings = ratings[ratings['book_id'].isin(book_ids)]
 

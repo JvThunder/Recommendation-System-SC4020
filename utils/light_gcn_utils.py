@@ -49,12 +49,12 @@ def recall_at_k(user_ratings, embeddings, k=10, device='cpu'):
         neg_scores = (user_emb * neg_emb).sum(dim=1)
         
         scores = torch.cat([pos_scores, neg_scores])
-        if len(scores) < k:
+        if len(pos_movies) < k:
             continue
 
-        curr_k = min(k, len(scores))
+        curr_k = min(k, len(pos_movies))
         _, indices = torch.topk(scores, curr_k)
-        hits += torch.sum(indices < k).item()
+        hits += torch.sum(indices < len(pos_movies)).item()
         total += len(pos_movies)
         
     return hits / total
@@ -72,12 +72,12 @@ def precision_at_k(user_ratings, embeddings, k=10, device='cpu'):
         neg_scores = (user_emb * neg_emb).sum(dim=1)
         
         scores = torch.cat([pos_scores, neg_scores])
-        if len(scores) < k:
+        if len(pos_movies) < k:
             continue
     
-        curr_k = min(k, len(scores))
+        curr_k = min(k, len(pos_movies))
         _, indices = torch.topk(scores, curr_k)
-        hits += torch.sum(indices < k).item()
+        hits += torch.sum(indices < len(pos_movies)).item()
         total += k
         
     return hits / total

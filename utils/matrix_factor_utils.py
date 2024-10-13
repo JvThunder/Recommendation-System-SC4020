@@ -8,22 +8,15 @@ def recall_at_k(user_ratings, embeddings, k=10):
     
     for user_id, pos_movies, neg_movies in user_ratings:   
         scores = embeddings[user_id][pos_movies+neg_movies]
-        # len(pos_movies) = 3
-        # len(neg_movies) = 3
-        # k = 3
-        # scores = [2, 1, 5, 3, 4, 2]
-        # indices = [2, 5, 4, 0, 3, 1]
-    
 
-        curr_k = min(k, len(scores))
+        if len(pos_movies) <= k:
+            continue
+
+        curr_k = min(k, len(pos_movies))
         _, indices = torch.topk(scores, curr_k)
-        print(indices)
-        print(indices < len(pos_movies))
-        hits += torch.sum(indices < len(pos_movies)).item()
+        no_positive = torch.sum(indices < len(pos_movies)).item()
+        hits += no_positive
         total += len(pos_movies)
-
-        print("no. correct:", torch.sum(indices < k).item())
-        print("total positive:", len(pos_movies))
         
     return hits / total
 
@@ -34,9 +27,11 @@ def precision_at_k(user_ratings, embeddings, k=10):
     for user_id, pos_movies, neg_movies in user_ratings:
         scores = embeddings[user_id][pos_movies+neg_movies]
         
-        curr_k = min(k, len(scores))
-        _, indices = torch.topk(scores, curr_k)
-        hits += torch.sum(indices < k).item()
+        if len(pos_movies) <= k:
+            continue
+        
+        _, indices = torch.topk(scores, k)
+        hits += torch.sum(indices < len(pos_movies)).item()
         total += k
         
     return hits / total
