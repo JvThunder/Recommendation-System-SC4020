@@ -3,45 +3,38 @@
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split as sk_split
+from collections import defaultdict
 
 DEFAULT_USER_COL = "userid"
 DEFAULT_ITEM_COL = "movieid"
 DEFAULT_TIMESTAMP_COL = "timestamp"
 
-from split_utils import (
+def build_user_item_interactions(ratings_df, user_column_name="userid", item_column_name="itemid", rating_column_name="rating"):
+
+    user_item_dict = defaultdict(list)
+    for user_id, item_id, rating in zip(ratings_df[user_column_name], ratings_df[item_column_name], ratings_df[rating_column_name]):
+        user_item_dict[user_id].append((item_id, rating))
+    return user_item_dict
+
+def get_positive_negative_ratings(user_item_dict, positive_threshold, negative_threshold):
+
+    user_ratings = []
+
+    for user_id, items in user_item_dict.items():
+        pos_items = [item_id for item_id, rating in items if rating >= positive_threshold]
+        neg_items = [item_id for item_id, rating in items if rating <= negative_threshold]
+        
+        if len(pos_items) == 0 or len(neg_items) == 0:
+            continue
+        
+        user_ratings.append((user_id, pos_items, neg_items))
+        
+    return user_ratings
+
+from .split_utils import (
     process_split_ratio,
     min_rating_filter_pandas,
-    split_pandas_data_with_ratios,
 )
-
-
-def python_random_split(data, ratio=0.75, seed=42):
-    """Pandas random splitter.
-
-    The splitter randomly splits the input data.
-
-    Args:
-        data (pandas.DataFrame): Pandas DataFrame to be split.
-        ratio (float or list): Ratio for splitting data. If it is a single float number
-            it splits data into two halves and the ratio argument indicates the ratio
-            of training data set; if it is a list of float numbers, the splitter splits
-            data into several portions corresponding to the split ratios. If a list is
-            provided and the ratios are not summed to 1, they will be normalized.
-        seed (int): Seed.
-
-    Returns:
-        list: Splits of the input data as pandas.DataFrame.
-    """
-    multi_split, ratio = process_split_ratio(ratio)
-
-    if multi_split:
-        splits = split_pandas_data_with_ratios(data, ratio, shuffle=True, seed=seed)
-        splits_new = [x.drop("split_index", axis=1) for x in splits]
-
-        return splits_new
-    else:
-        return sk_split(data, test_size=None, train_size=ratio, random_state=seed)
-
 
 def _do_stratification(
     data,
@@ -113,8 +106,6 @@ def _do_stratification(
         prev_threshold = threshold
 
     return splits
-
-
 
 def python_stratified_split(
     data,

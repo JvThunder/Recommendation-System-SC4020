@@ -1,7 +1,7 @@
 import pandas as pd
 from sentence_transformers import SentenceTransformer
 import torch
-from utils.graph_splitters import python_stratified_split
+from utils.data_utils import python_stratified_split
 
 TRANSFORMER_EMBEDDING_DIM = 384
 
