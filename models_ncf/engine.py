@@ -67,7 +67,7 @@ class Engine(object):
             test_scores = []
             negative_scores = []
             bs = self.config['batch_size']
-            for start_idx in range(0, len(test_users), bs):
+            for start_idx in tqdm(range(0, len(test_users), bs)):
                 end_idx = min(start_idx + bs, len(test_users))
                 batch_test_users = test_users[start_idx:end_idx]
                 batch_test_items = test_items[start_idx:end_idx]

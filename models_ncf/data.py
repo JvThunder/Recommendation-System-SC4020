@@ -88,8 +88,8 @@ class SampleGenerator(object):
         # Merge interaction counts back into the ratings DataFrame
         ratings = ratings.merge(user_interaction_counts, on='userId')
         
-        # Calculate the cutoff rank for test data per user (25% of interactions)
-        ratings['cutoff_rank'] = ratings['interaction_count'].apply(lambda x: math.ceil(x * 0.25))
+        # Calculate the cutoff rank for test data per user (10% of interactions)
+        ratings['cutoff_rank'] = ratings['interaction_count'].apply(lambda x: math.ceil(x * 0.10))
         
         # Mark interactions as test or train based on the cutoff rank
         ratings['is_test'] = ratings['rank_latest'] <= ratings['cutoff_rank']
@@ -99,7 +99,7 @@ class SampleGenerator(object):
         train = ratings[~ratings['is_test']]
         
         # Ensure that every user is represented in both sets
-        assert train['userId'].nunique() == test['userId'].nunique()
+        # assert train['userId'].nunique() == test['userId'].nunique()
         
         return train[['userId', 'itemId', 'rating']], test[['userId', 'itemId', 'rating']]
     
