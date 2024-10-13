@@ -22,8 +22,8 @@ def get_goodbooks_10k():
     # user_ids = (user_counts[user_counts >= 100].index)
     # ratings = ratings[ratings['user_id'].isin(user_ids)]
 
-    # Flter by sampling only 1500 users 
-    user_ids = ratings['user_id'].sample(n=3000, random_state=42).unique()
+    # Flter by sampling only 1000 users 
+    user_ids = ratings['user_id'].sample(n=1000, random_state=42).unique()
     ratings = ratings[ratings['user_id'].isin(user_ids)]
     
     # Filter out books with less than 100 ratings
@@ -62,7 +62,7 @@ def get_goodbooks_10k():
     col_item = 'itemid'
     col_timestamp = 'timestamp'
     
-    train_ratings, test_ratings = python_stratified_split(ratings, ratio=0.75, col_user=col_user, col_item=col_item, col_timestamp=col_timestamp)
+    train_ratings, test_ratings = python_stratified_split(ratings, ratio=0.9, col_user=col_user, col_item=col_item, col_timestamp=col_timestamp)
 
     return users, books, train_ratings, test_ratings, user_features_tensor, books_features_tensor
 
@@ -141,7 +141,7 @@ def get_movielens_1m():
     col_user = 'userid'
     col_item = 'itemid'
     col_timestamp = 'timestamp'
-    train_ratings, test_ratings = python_stratified_split(ratings, ratio=0.75, col_user=col_user, col_item=col_item, col_timestamp=col_timestamp)
+    train_ratings, test_ratings = python_stratified_split(ratings, ratio=0.9, col_user=col_user, col_item=col_item, col_timestamp=col_timestamp)
 
     return users, movies, train_ratings, test_ratings, movies_features_tensor, user_features_tensor
 

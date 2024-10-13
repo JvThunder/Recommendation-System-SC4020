@@ -37,9 +37,7 @@ def bpr_loss(embeddings, users, pos_items, neg_items):
 
 
 def recall_at_k(user_ratings, embeddings, k=10, device='cpu'):
-    hits = 0
-    total = 0
-    
+    recalls = []
     for user_id, pos_movies, neg_movies in user_ratings:    
         user_emb = embeddings[user_id]
         pos_emb = embeddings[pos_movies]
@@ -49,19 +47,16 @@ def recall_at_k(user_ratings, embeddings, k=10, device='cpu'):
         neg_scores = (user_emb * neg_emb).sum(dim=1)
         
         scores = torch.cat([pos_scores, neg_scores])
-        if len(pos_movies) < k:
-            continue
 
         curr_k = min(k, len(pos_movies))
         _, indices = torch.topk(scores, curr_k)
-        hits += torch.sum(indices < len(pos_movies)).item()
-        total += len(pos_movies)
+        no_positive = torch.sum(indices < len(pos_movies)).item()
+        recalls.append(no_positive/len(pos_movies))
         
-    return hits / total
+    return sum(recalls)/len(recalls)
 
 def precision_at_k(user_ratings, embeddings, k=10, device='cpu'):
-    hits = 0
-    total = 0
+    precisions = []
     
     for user_id, pos_movies, neg_movies in user_ratings:
         user_emb = embeddings[user_id]
@@ -72,15 +67,13 @@ def precision_at_k(user_ratings, embeddings, k=10, device='cpu'):
         neg_scores = (user_emb * neg_emb).sum(dim=1)
         
         scores = torch.cat([pos_scores, neg_scores])
-        if len(pos_movies) < k:
-            continue
     
         curr_k = min(k, len(pos_movies))
         _, indices = torch.topk(scores, curr_k)
-        hits += torch.sum(indices < len(pos_movies)).item()
-        total += k
+        no_positive = torch.sum(indices < len(pos_movies)).item()
+        precisions.append(no_positive/curr_k)
         
-    return hits / total
+    return sum(precisions)/len(precisions)
 
 def evaluate(model, user_features_tensor, item_features_tensor, edge_index, users, pos_items, neg_items):
     model.eval()

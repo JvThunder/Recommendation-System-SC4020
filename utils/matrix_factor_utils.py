@@ -3,38 +3,26 @@ import numpy as np
 import torch 
 
 def recall_at_k(user_ratings, embeddings, k=10):
-    hits = 0
-    total = 0
-    
+    recalls = []
     for user_id, pos_movies, neg_movies in user_ratings:   
         scores = embeddings[user_id][pos_movies+neg_movies]
-
-        if len(pos_movies) <= k:
-            continue
-
         curr_k = min(k, len(pos_movies))
         _, indices = torch.topk(scores, curr_k)
         no_positive = torch.sum(indices < len(pos_movies)).item()
-        hits += no_positive
-        total += len(pos_movies)
+        recalls.append(no_positive/len(pos_movies))
         
-    return hits / total
+    return sum(recalls)/len(recalls)
 
-def precision_at_k(user_ratings, embeddings, k=10):
-    hits = 0
-    total = 0
-    
+def precision_at_k(user_ratings, embeddings, k=10): 
+    precisions = []
     for user_id, pos_movies, neg_movies in user_ratings:
         scores = embeddings[user_id][pos_movies+neg_movies]
+        curr_k = min(k, len(pos_movies))
+        _, indices = torch.topk(scores, curr_k)
+        no_positive = torch.sum(indices < len(pos_movies)).item()
+        precisions.append(no_positive/curr_k)
         
-        if len(pos_movies) <= k:
-            continue
-        
-        _, indices = torch.topk(scores, k)
-        hits += torch.sum(indices < len(pos_movies)).item()
-        total += k
-        
-    return hits / total
+    return sum(precisions)/len(precisions)
 
 
 def mask_datasets(device, train_ratings, test_ratings, val_ratio=0.1):
