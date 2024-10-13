@@ -1,5 +1,6 @@
 import torch
 import random
+import math
 import pandas as pd
 from copy import deepcopy
 from torch.utils.data import DataLoader, Dataset
@@ -78,13 +79,30 @@ class SampleGenerator(object):
         return ratings
 
     def _split_loo(self, ratings):
-        """leave one out train/test split """
+        # Rank interactions per user by timestamp in descending order
         ratings['rank_latest'] = ratings.groupby(['userId'])['timestamp'].rank(method='first', ascending=False)
-        test = ratings[ratings['rank_latest'] == 1]
-        train = ratings[ratings['rank_latest'] > 1]
+        
+        # Calculate the number of interactions per user
+        user_interaction_counts = ratings.groupby('userId').size().reset_index(name='interaction_count')
+        
+        # Merge interaction counts back into the ratings DataFrame
+        ratings = ratings.merge(user_interaction_counts, on='userId')
+        
+        # Calculate the cutoff rank for test data per user (25% of interactions)
+        ratings['cutoff_rank'] = ratings['interaction_count'].apply(lambda x: math.ceil(x * 0.25))
+        
+        # Mark interactions as test or train based on the cutoff rank
+        ratings['is_test'] = ratings['rank_latest'] <= ratings['cutoff_rank']
+        
+        # Split the data into training and testing sets
+        test = ratings[ratings['is_test']]
+        train = ratings[~ratings['is_test']]
+        
+        # Ensure that every user is represented in both sets
         assert train['userId'].nunique() == test['userId'].nunique()
+        
         return train[['userId', 'itemId', 'rating']], test[['userId', 'itemId', 'rating']]
-
+    
     def _sample_negative(self, ratings):
         """return all negative items & 100 sampled negative items"""
         interact_status = ratings.groupby('userId')['itemId'].apply(set).reset_index().rename(
