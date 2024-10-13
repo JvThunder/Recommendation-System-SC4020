@@ -29,8 +29,12 @@ class LightGCN(MessagePassing):
 class LightGCNStack(torch.nn.Module):
     def __init__(self, num_nodes, no_user_features, no_movie_features, embedding_dim, num_layers):
         super().__init__()
-        self.users_latent = nn.Linear(no_user_features, embedding_dim)
-        self.movies_latent = nn.Linear(no_movie_features, embedding_dim)
+        self.users_latent = nn.Sequential(
+            nn.Linear(no_user_features, embedding_dim),
+        )
+        self.movies_latent = nn.Sequential(
+            nn.Linear(no_user_features, embedding_dim),
+        )
         self.convs = torch.nn.ModuleList([LightGCN(embedding_dim, embedding_dim) for _ in range(num_layers)])
         self.num_layers = num_layers
 
