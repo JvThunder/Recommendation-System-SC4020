@@ -19,7 +19,11 @@ conda activate rec-sys
 conda list --export > requirements.txt
 ```
 
-
+# Downloading Git Submodules
+```bash
+git submodule init
+git submodule update --recursive
+```
 
 
 ## Contributors

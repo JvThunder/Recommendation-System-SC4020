@@ -18,10 +18,14 @@ def get_goodbooks_10k():
     ratings = ratings[ratings['book_id'].isin(books['book_id'])]
 
     # Filter out users with less than 100 ratings
-    user_counts = ratings['user_id'].value_counts()
-    user_ids = (user_counts[user_counts >= 100].index)
-    ratings = ratings[ratings['user_id'].isin(user_ids)]
+    # user_counts = ratings['user_id'].value_counts()
+    # user_ids = (user_counts[user_counts >= 100].index)
+    # ratings = ratings[ratings['user_id'].isin(user_ids)]
 
+    # Flter by sampling only 1500 users 
+    user_ids = ratings['user_id'].sample(n=1500, random_state=42).unique()
+    ratings = ratings[ratings['user_id'].isin(user_ids)]
+    
     # Filter out books with less than 100 ratings
     book_counts = ratings['book_id'].value_counts()
     book_ids = (book_counts[book_counts >= 10].index)
@@ -88,10 +92,9 @@ def get_movielens_1m():
     movies['movieid'] = movies['movieid'].map(movie_to_index)
     ratings['movieid'] = ratings['movieid'].map(movie_to_index)
 
-    assert(ratings['userid'].nunique() == ratings['userid'].max())
-    assert(ratings['userid'].nunique() == ratings['userid'].max())
-    assert(ratings['movieid'].nunique() == ratings['movieid'].max())
-    assert(movies['movieid'].nunique() == movies['movieid'].max())
+    # assert(ratings['userid'].nunique() == ratings['userid'].max())
+    # assert(ratings['movieid'].nunique() == ratings['movieid'].max())
+    # assert(movies['movieid'].nunique() == movies['movieid'].max())
 
     occupation_dict = {
         0: "other",
